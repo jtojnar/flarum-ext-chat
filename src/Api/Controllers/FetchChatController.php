@@ -15,7 +15,7 @@ namespace PushEDX\Chat\Api\Controllers;
 use Carbon\Carbon;
 use PushEDX\Chat\Api\Serializers\FetchChatSerializer;
 use PushEDX\Chat\Commands\FetchChat;
-use PushEDX\Chat\Message;
+use PushEDX\Chat\ChatMessage\ChatMessage;
 use Flarum\Api\Controller\AbstractShowController;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Psr\Http\Message\ServerRequestInterface;
@@ -49,27 +49,14 @@ class FetchChatController extends AbstractShowController
     {
         if ($id === null)
         {
-            $msgs = Message::query()->orderBy('id', 'desc')->limit(20);
+            $msgs = ChatMessage::query()->orderBy('id', 'desc')->limit(20);
         }
         else
         {
-            $msgs = Message::query()->where('id', '<', $id)->orderBy('id', 'desc')->limit(20);
+            $msgs = ChatMessage::query()->where('id', '<', $id)->orderBy('id', 'desc')->limit(20);
         }
 
         return $msgs->get()->reverse();
-    }
-
-    static public function UpdateMessages($msg)
-    {
-        $message = Message::build(
-            $msg['message'],
-            $msg['actorId'],
-            new Carbon
-        );
-
-        $message->save();
-
-        return $message->id;
     }
 
     /**

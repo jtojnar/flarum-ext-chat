@@ -30,7 +30,9 @@ return [
         //$events->subscribe(Listeners\LoadSettingsFromDatabase::class);
         // registers the API endpoint and the permission send to the API
         $events->subscribe(Listeners\AddChatApi::class);
-
+        if (interface_exists('Moay\Notify\Interfaces\ConnectorInterface')) {
+            $events->subscribe(Listeners\ChatMessageWasPostedListener::class);
+        }
         // register the service provider
         //$app->register(StorageServiceProvider::class);
     }

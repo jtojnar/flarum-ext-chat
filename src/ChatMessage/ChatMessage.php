@@ -10,11 +10,13 @@
  * file that was distributed with this source code.
  */
 
-namespace PushEDX\Chat;
+namespace PushEDX\Chat\ChatMessage;
 
 use Carbon\Carbon;
 use Flarum\User\User;
 use Flarum\Database\AbstractModel;
+use Flarum\Foundation\EventGeneratorTrait;
+use PushEDX\Chat\ChatMessage\Event\Posted as ChatMessageWasPosted;
 
 /**
  * @property int        $id
@@ -26,24 +28,28 @@ use Flarum\Database\AbstractModel;
  *
  * @property Carbon     $created_at
  */
-class Message extends AbstractModel
+class ChatMessage extends AbstractModel
 {
+    use EventGeneratorTrait;
+
     protected $table = 'pushedx_messages';
 
     /**
      * Create a new message.
      *
      * @param string $message
-     * @param int $actorId
+     * @param User $user
      * @param Carbon $created_at
      */
-    public static function build($message, $actorId, $created_at)
+    public static function build(string $message, User $user, Carbon $created_at)
     {
         $msg = new static;
 
         $msg->message = $message;
-        $msg->actorId = $actorId;
+        $msg->actorId = $user->id;
         $msg->created_at = $created_at;
+
+        $msg->raise(new ChatMessageWasPosted($msg));
 
         return $msg;
     }

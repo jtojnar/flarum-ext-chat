@@ -31,6 +31,7 @@ use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Pusher;
+use PushEDX\Chat\ChatMessage\ChatMessage;
 
 class PostChatHandler
 {
@@ -91,16 +92,20 @@ class PostChatHandler
             'pushedx.chat.post'
         );
 
-        $msg = [
-            'actorId' => $command->actor->id,
-            'message' => $command->msg
-        ];
+        $message = ChatMessage::build(
+            $command->msg,
+            $command->actor,
+            new Carbon
+        );
 
-        $id = FetchChatController::UpdateMessages($msg);
-        $msg['id'] = $id;
+        $message->save();
 
         $pusher = $this->getPusher();
-        $pusher->trigger('public', 'newChat', $msg);
+        $pusher->trigger('public', 'newChat', $message->toArray());
+
+        $this->dispatchEventsFor($message, $command->actor);
+
+        $message->save();
 
         return $command->msg;
     }
