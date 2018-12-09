@@ -8,3 +8,6 @@ pushedx-chat:
       disable_notifications: Disable notifications
     errors:
       unauthenticated: Only registered users can use the chat
+  admin:
+    notify_events:
+      chat_message_posted: a message was posted to chat

@@ -8,3 +8,6 @@ pushedx-chat:
       disable_notifications: Vypnout oznámení
     errors:
       unauthenticated: Do chatu mohou přispívat pouze registrovaní uživatelé
+  admin:
+    notify_events:
+      chat_message_posted: zpráva byla poslána do chatu

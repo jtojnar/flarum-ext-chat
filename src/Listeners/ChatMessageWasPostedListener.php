@@ -37,7 +37,6 @@ class ChatMessageWasPostedListener extends NotificationListener
      */
     public function shouldTrigger(ChatMessageWasPosted $event)
     {
-        // return $this->settings->get('flarum-notify.newChatMessageEvent') === '1';
-        return true;
+        return $this->settings->get('flarum-notify.newChatMessageEvent') === '1';
     }
 }
