@@ -13,7 +13,9 @@
 namespace PushEDX\Chat\Api\Controllers;
 
 use Carbon\Carbon;
-use PushEDX\Chat\Api\Serializers\FetchChatSerializer;
+use PushEDX\Chat\Api\Serializers\ChatMessageSerializer;
+use PushEDX\Chat\ChatMessage;
+use PushEDX\Chat\ChatMessageRepository;
 use PushEDX\Chat\Commands\FetchChat;
 use PushEDX\Chat\Message;
 use Flarum\Api\Controller\AbstractShowController;
@@ -21,16 +23,27 @@ use Illuminate\Contracts\Bus\Dispatcher;
 use Psr\Http\Message\ServerRequestInterface;
 use Tobscure\JsonApi\Document;
 
-class FetchChatController extends AbstractShowController
+class ChatMessageFetchController extends AbstractShowController
 {
 
     /**
      * The serializer instance for this request.
      *
-     * @var ImageSerializer
+     * @var ChatMessageSerializer
      */
-    public $serializer = FetchChatSerializer::class;
+    public $serializer = ChatMessageSerializer::class;
 
+    /**
+     * {@inheritdoc}
+     */
+    public $include = [
+        'user',
+    ];
+
+    /**
+     * {@inheritdoc}
+     */
+    public $sortFields = ['-created_at'];
 
     /**
      * @var Dispatcher
@@ -38,39 +51,46 @@ class FetchChatController extends AbstractShowController
     protected $bus;
 
     /**
-     * @param Dispatcher $bus
+     * @var ChatMessageRepository
      */
-    public function __construct(Dispatcher $bus)
+    protected $messages;
+
+    /**
+     * @param Dispatcher $bus
+     * @param ChatMessageRepository $messages
+     */
+    public function __construct(Dispatcher $bus, ChatMessageRepository $messages)
     {
         $this->bus = $bus;
+        $this->messages = $messages;
     }
 
-    static public function GetMessages($id = null)
-    {
-        if ($id === null)
-        {
-            $msgs = Message::query()->orderBy('id', 'desc')->limit(20);
-        }
-        else
-        {
-            $msgs = Message::query()->where('id', '<', $id)->orderBy('id', 'desc')->limit(20);
-        }
+    // static public function GetMessages($id = null)
+    // {
+    //     if ($id === null)
+    //     {
+    //         $msgs = Message::query()->orderBy('id', 'desc')->limit(20);
+    //     }
+    //     else
+    //     {
+    //         $msgs = Message::query()->where('id', '<', $id)->orderBy('id', 'desc')->limit(20);
+    //     }
 
-        return $msgs->get()->reverse();
-    }
+    //     return $msgs->get()->reverse();
+    // }
 
-    static public function UpdateMessages($msg)
-    {
-        $message = Message::build(
-            $msg['message'],
-            $msg['actorId'],
-            new Carbon
-        );
+    // static public function UpdateMessages($msg)
+    // {
+    //     $message = Message::build(
+    //         $msg['message'],
+    //         $msg['actorId'],
+    //         new Carbon
+    //     );
 
-        $message->save();
+    //     $message->save();
 
-        return $message->id;
-    }
+    //     return $message->id;
+    // }
 
     /**
      * Get the data to be serialized and assigned to the response document.
@@ -79,17 +99,30 @@ class FetchChatController extends AbstractShowController
      * @param Document               $document
      * @return mixed
      */
+    // protected function data(ServerRequestInterface $request, Document $document)
+    // {
+    //     if (isset($request->getParsedBody()['id'])) {
+    //         $id = $request->getParsedBody()['id'];
+    //         $msgs = ChatMessageFetchController::GetMessages($id);
+    //     } else {
+    //         $msgs = ChatMessageFetchController::GetMessages();
+    //     }
+
+    //     return $this->bus->dispatch(
+    //         new FetchChat($msgs)
+    //     );
+    // }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function data(ServerRequestInterface $request, Document $document)
     {
-        if (isset($request->getParsedBody()['id'])) {
-            $id = $request->getParsedBody()['id'];
-            $msgs = FetchChatController::GetMessages($id);
-        } else {
-            $msgs = FetchChatController::GetMessages();
-        }
+        $actor = $request->getAttribute('actor');
+        $include = $this->extractInclude($request);
 
-        return $this->bus->dispatch(
-            new FetchChat($msgs)
-        );
+        $messages = $this->messages->get();
+
+        return $messages->load($include);
     }
 }

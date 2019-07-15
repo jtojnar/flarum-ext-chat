@@ -13,25 +13,28 @@
 namespace PushEDX\Chat\Api\Serializers;
 
 use Flarum\Api\Serializer\AbstractSerializer;
+use Flarum\Api\Serializer\UserSerializer;
 
-class ChatSerializer extends AbstractSerializer
+class ChatMessageSerializer extends AbstractSerializer
 {
-
     /**
-     * @var string
+     * {@inheritdoc}
      */
-    protected $type = 'chat';
-
-    /**
-     * Get the default set of serialized attributes for a model.
-     *
-     * @param object|array $model
-     * @return array
-     */
-    protected function getDefaultAttributes($model)
+    protected function getDefaultAttributes($message)
     {
-        return [
-            'post' => $model->post
+        $attributes = [
+            'message' => $message->message,
+            'createdAt' => $this->formatDate($message->created_at),
         ];
+
+        return $attributes;
     }
+
+   /**
+    * @return \Tobscure\JsonApi\Relationship
+    */
+   protected function user($message)
+   {
+       return $this->hasOne($message, UserSerializer::class);
+   }
 }

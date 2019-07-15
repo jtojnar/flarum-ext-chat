@@ -17,7 +17,7 @@ use Carbon\Carbon;
 //use Flagrow\ImageUpload\Events\ImageWillBeSaved;
 //use Flagrow\ImageUpload\Image;
 //use Flagrow\ImageUpload\Validators\ImageValidator;
-use PushEDX\Chat\Api\Controllers\FetchChatController;
+use PushEDX\Chat\Api\Controllers\ChatMessageFetchController;
 use Flarum\User\AssertPermissionTrait;
 use Flarum\Post\PostRepository;
 use Flarum\User\UserRepository;
@@ -29,6 +29,7 @@ use Illuminate\Support\Str;
 use Intervention\Image\ImageManager;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
+use PushEDX\Chat\ChatMessage;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Pusher;
 
@@ -78,7 +79,7 @@ class PostChatHandler
     /**
      * Handles the command execution.
      *
-     * @param UploadImage $command
+     * @param PostChat $command
      * @return null|string
      *
      * @todo check permission
@@ -91,16 +92,16 @@ class PostChatHandler
             'pushedx.chat.post'
         );
 
-        $msg = [
-            'actorId' => $command->actor->id,
-            'message' => $command->msg
-        ];
+        $message = ChatMessage::build(
+            $command->msg,
+            $command->actor,
+            new Carbon
+        );
 
-        $id = FetchChatController::UpdateMessages($msg);
-        $msg['id'] = $id;
+        $message->save();
 
         $pusher = $this->getPusher();
-        $pusher->trigger('public', 'newChat', $msg);
+        $pusher->trigger('public', 'newChat', $message->toArray());
 
         return $command->msg;
     }

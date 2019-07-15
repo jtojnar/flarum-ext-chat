@@ -17,33 +17,40 @@ use Flarum\User\User;
 use Flarum\Database\AbstractModel;
 
 /**
- * @property int        $id
+ * @property int $id
  *
- * @property string     $message
+ * @property string $message
  *
- * @property int        $actorId
- * @property User       $actor
+ * @property int|null $user_id
+ * @property User|null $user
  *
- * @property Carbon     $created_at
+ * @property Carbon $created_at
  */
-class Message extends AbstractModel
+class ChatMessage extends AbstractModel
 {
     protected $table = 'pushedx_messages';
+
+    /**
+     * The attributes that should be mutated to dates.
+     *
+     * @var array
+     */
+    protected $dates = ['created_at'];
 
     /**
      * Create a new message.
      *
      * @param string $message
-     * @param int $actorId
-     * @param Carbon $created_at
+     * @param User $user
+     * @param Carbon $createdAt
      */
-    public static function build($message, $actorId, $created_at)
+    public static function build($message, User $user, Carbon $createdAt)
     {
         $msg = new static;
 
         $msg->message = $message;
-        $msg->actorId = $actorId;
-        $msg->created_at = $created_at;
+        $msg->actor_id = $user->id;
+        $msg->created_at = $createdAt;
 
         return $msg;
     }
@@ -51,8 +58,8 @@ class Message extends AbstractModel
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function actor()
+    public function user()
     {
-        return $this->belongsTo(User::class, 'actorId');
+        return $this->belongsTo(User::class);
     }
 }

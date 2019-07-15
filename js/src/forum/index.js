@@ -1,13 +1,20 @@
-import { extend } from 'flarum/extend';
+import { extend as extendPrototype } from 'flarum/extend';
 import HeaderPrimary from 'flarum/components/HeaderPrimary';
 
-import {ChatFrame,ChatMessage} from './components/ChatFrame';
+import {ChatFrame} from './components/ChatFrame';
+import ChatMessage from './models/ChatMessage';
+
+import { Extend } from '@flarum/core/forum';
+
+export const extend = [
+    new Extend.Model('chat-messages', ChatMessage)
+];
 
 app.initializers.add('pushedx-realtime-chat', app => {
 
     var forward = [];
 
-    extend(HeaderPrimary.prototype, 'config', function(x, isInitialized, context) {
+    extendPrototype(HeaderPrimary.prototype, 'config', function(x, isInitialized, context) {
         if (isInitialized) return;
 
         app.pusher.then(channels => {
@@ -16,7 +23,7 @@ app.initializers.add('pushedx-realtime-chat', app => {
                 m.redraw();
             });
 
-            extend(context, 'onunload', () => channels.main.unbind('newChat'));
+            extendPrototype(context, 'onunload', () => channels.main.unbind('newChat'));
         });
 
         // Just loaded? Fetch last 10 messages
@@ -47,7 +54,7 @@ app.initializers.add('pushedx-realtime-chat', app => {
     /**
      * Add the upload button to the post composer.
      */
-    extend(HeaderPrimary.prototype, 'items', function(items) {
+    extendPrototype(HeaderPrimary.prototype, 'items', function(items) {
         //var chatFrame = new ChatFrame();
         //var realView = chatFrame.view;
         /*

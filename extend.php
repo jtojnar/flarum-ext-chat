@@ -16,7 +16,8 @@ namespace PushEDX\Chat;
 use Flarum\Extend;
 use Flarum\Foundation\Application;
 use Illuminate\Contracts\Events\Dispatcher;
-
+use PushEDX\Chat\Api\Controllers\ChatMessagePostController;
+use PushEDX\Chat\Api\Controllers\ChatMessageFetchController;
 
 return [
     (new Extend\Frontend('admin'))
@@ -26,12 +27,7 @@ return [
         ->css(__DIR__ . '/resources/less/forum/chat.less')
         ->js(__DIR__ . '/js/dist/forum.js'),
     new Extend\Locales(__DIR__ . '/resources/locale'),
-    function (Dispatcher $events, Application $app) {
-        //$events->subscribe(Listeners\LoadSettingsFromDatabase::class);
-        // registers the API endpoint and the permission send to the API
-        $events->subscribe(Listeners\AddChatApi::class);
-
-        // register the service provider
-        //$app->register(StorageServiceProvider::class);
-    }
+    (new Extend\Routes('api'))
+        ->post('/chat', 'pushedx.chat.post', ChatMessagePostController::class)
+        ->get('/chat', 'pushedx.chat.fetch', ChatMessageFetchController::class),
 ];

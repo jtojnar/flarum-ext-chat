@@ -12,22 +12,22 @@
 
 namespace PushEDX\Chat\Api\Controllers;
 
-use PushEDX\Chat\Api\Serializers\ChatSerializer;
+use PushEDX\Chat\Api\Serializers\ChatMessageSerializer;
 use PushEDX\Chat\Commands\PostChat;
 use Flarum\Api\Controller\AbstractShowController;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Psr\Http\Message\ServerRequestInterface;
 use Tobscure\JsonApi\Document;
 
-class ChatController extends AbstractShowController
+class ChatMessagePostController extends AbstractShowController
 {
 
     /**
      * The serializer instance for this request.
      *
-     * @var ImageSerializer
+     * @var ChatMessageSerializer
      */
-    public $serializer = ChatSerializer::class;
+    public $serializer = ChatMessageSerializer::class;
 
 
     /**
